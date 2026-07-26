@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "AIX — Artificial Intelligence eXperience"
+version = "1.0.0"
+id = "artifacts/aix-app"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18355
+
+[services.development]
+run = "pnpm --filter @workspace/aix-app run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/aix-app", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/aix-app/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18355"
+BASE_PATH = "/"
