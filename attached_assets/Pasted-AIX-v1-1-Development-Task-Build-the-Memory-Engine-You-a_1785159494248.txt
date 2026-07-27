@@ -1,0 +1,201 @@
+AIX v1.1 Development Task — Build the Memory Engine
+
+You are continuing the existing AIX project. Do NOT rebuild the application from scratch.
+
+Your task is to upgrade the current MVP to Version 1.1 by implementing the first real intelligence layer of the system.
+
+Goal
+
+Build the Memory Engine AIX, which becomes the central brain of the application.
+
+The Memory Engine should continuously remember the user's information, progress, behavior, goals, and learning patterns, so future decision-making becomes more accurate.
+
+---
+
+Requirements
+
+1. Create a new Memory Engine module
+
+Create a dedicated module called:
+
+- Memory Engine
+
+Keep it completely independent so future engines can communicate with it.
+
+---
+
+2. User Memory Profile
+
+Create a complete long-term memory profile containing:
+
+Personal Information
+
+- Name
+- Age
+- Grade Level
+- School
+- Major
+- Country
+- Time Zone
+
+Academic Goal
+
+- Year Goal (Example: 99%)
+- Monthly Goal
+- Weekly Goal
+- Daily Goal
+
+Study Preferences
+
+- Daily Study Hours
+- Sleep Time
+- Wake-up Time
+- Preferred Study Time
+- Preferred Subjects
+
+---
+
+3. Productivity Memory
+
+The system should automatically remember:
+
+- Total Study Hours
+- Current Streak
+- Best Streak
+- Finished Lessons
+- Finished Subjects
+- Finished Exams
+- Total Reviews
+
+---
+
+4. Learning Memory
+
+Remember:
+
+- Weak Subjects
+- Strong Subjects
+- Difficult Lessons
+- Mastered Lessons
+- Average Mastery
+- Last Reviewed Lesson
+- Lessons frequently forgotten
+
+---
+
+5. Health & Energy Memory
+
+Store:
+
+- Sleep Hours
+- Daily Energy Level
+- Mood
+- Last Study Session Duration
+
+These values will be used later by the Decision Engine.
+
+---
+
+6. Decision History
+
+Create a table that stores every decision made by the system.
+
+Each record should include:
+
+- Date
+- Recommended Lesson
+- Recommended Subject
+- Reason
+- Confidence Score
+- Was the recommendation completed?
+
+---
+
+7. Achievements Memory
+
+Store:
+
+- Achievements
+- Badges
+- Milestones
+- Best Day
+- Longest Study Session
+
+---
+
+8. Dashboard Integration
+
+Update the Home Dashboard to display:
+
+- Annual Goal
+- Current Progress
+- Current Streak
+- Study Hours
+- Lessons Completed
+- Reviews Due
+- Smart Recommendation
+
+---
+
+9. Database
+
+Create the required tables using the existing PostgreSQL + Drizzle architecture.
+
+Keep everything modular.
+
+Do not modify unrelated modules.
+
+---
+
+10. Future Ready
+
+The Memory Engine must be designed so future engines can easily access it, including:
+
+- Decision Engine
+- Priority Engine
+- Revision Engine
+- Motivation Engine
+- Health Engine
+
+No duplicated code.
+
+Use reusable services.
+
+---
+
+11. Clean Architecture
+
+Keep the project following:
+
+- Modular Architecture
+- Clean Code
+- SOLID Principles
+- Clear Folder Structure
+
+---
+
+12. Documentation
+
+After implementation, generate a file called:
+
+MEMORY_ENGINE.md
+
+Explain:
+
+- Architecture
+- Database Tables
+- Services
+- Future Expansion
+- How other engines will communicate with Memory Engine
+
+---
+
+Important:
+
+Do NOT redesign the UI.
+
+Do NOT rebuild existing pages.
+
+Extend the current project only.
+
+The final result should make AIX evolve from a productivity application into a true Personal Human Operating System.
