@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { useGetDashboardSummary } from "@workspace/api-client-react";
-import { Brain, ArrowLeft, Target, BookOpen, CheckSquare, Clock, Trophy, AlertTriangle, Zap } from "lucide-react";
+import { Brain, ArrowRight, Target, BookOpen, CheckSquare, Clock, Trophy, AlertTriangle, Zap } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -84,7 +84,7 @@ export default function Home() {
                 </div>
                 <Button size="lg" asChild className="shrink-0 w-full md:w-auto hover-elevate">
                   <Link href={`/subjects/${summary.suggestedLesson.subjectId}`}>
-                    ابدأ الدراسة <ArrowLeft className="w-4 h-4 mr-2" />
+                    ابدأ الدراسة <ArrowRight className="w-4 h-4 ml-2" />
                   </Link>
                 </Button>
               </div>

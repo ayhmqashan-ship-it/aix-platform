@@ -7,100 +7,107 @@ const router: IRouter = Router();
 
 // GET /dashboard/summary
 router.get("/dashboard/summary", async (req, res): Promise<void> => {
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, 1));
+  const today = new Date().toISOString().split("T")[0]!;
 
-  const subjects = await db.select().from(subjectsTable).where(eq(subjectsTable.userId, 1));
+  // Run all independent queries in parallel
+  const [userRows, subjects, allLessonsRows, allExams] = await Promise.all([
+    db.select().from(usersTable).where(eq(usersTable.id, 1)),
+    db.select().from(subjectsTable).where(eq(subjectsTable.userId, 1)),
+    db
+      .select({
+        // lesson fields
+        id:             lessonsTable.id,
+        name:           lessonsTable.name,
+        isCompleted:    lessonsTable.isCompleted,
+        isReviewed:     lessonsTable.isReviewed,
+        lastReviewedAt: lessonsTable.lastReviewedAt,
+        masteryLevel:   lessonsTable.masteryLevel,
+        // subject fields
+        subjectId:         subjectsTable.id,
+        subjectName:       subjectsTable.name,
+        subjectColor:      subjectsTable.color,
+        subjectDifficulty: subjectsTable.difficulty,
+      })
+      .from(lessonsTable)
+      .innerJoin(subjectsTable, eq(lessonsTable.subjectId, subjectsTable.id))
+      .where(eq(subjectsTable.userId, 1)),
+    db
+      .select()
+      .from(examsTable)
+      .where(eq(examsTable.userId, 1)),
+  ]);
 
-  const allLessons = await db
-    .select()
-    .from(lessonsTable)
-    .innerJoin(subjectsTable, eq(lessonsTable.subjectId, subjectsTable.id))
-    .where(eq(subjectsTable.userId, 1));
+  const user = userRows[0];
 
-  const allExams = await db
-    .select()
-    .from(examsTable)
-    .where(eq(examsTable.userId, 1));
+  // Stats
+  const totalLessons     = allLessonsRows.length;
+  const completedLessons = allLessonsRows.filter((r) => r.isCompleted).length;
+  const overallProgress  = totalLessons > 0
+    ? Math.round((completedLessons / totalLessons) * 100)
+    : 0;
 
-  const today = new Date().toISOString().split("T")[0];
-  const upcomingExams = allExams.filter((e) => !e.isCompleted && e.examDate >= today).length;
-  const lessonsNeedingReview = allLessons.filter(
-    (row) => row.lessons.isCompleted && !row.lessons.isReviewed
+  const upcomingExams = allExams.filter(
+    (e) => !e.isCompleted && e.examDate >= today,
   ).length;
 
-  const totalLessons = allLessons.length;
-  const completedLessons = allLessons.filter((row) => row.lessons.isCompleted).length;
-  const overallProgress =
-    totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+  const lessonsNeedingReview = allLessonsRows.filter(
+    (r) => r.isCompleted && !r.isReviewed,
+  ).length;
 
-  // Compute smart suggestion
-  const candidates: LessonCandidate[] = allLessons.map((row) => ({
-    lessonId: row.lessons.id,
-    lessonName: row.lessons.name,
-    subjectId: row.subjects.id,
-    subjectName: row.subjects.name,
-    subjectColor: row.subjects.color,
-    subjectDifficulty: row.subjects.difficulty,
-    masteryLevel: row.lessons.masteryLevel,
-    isCompleted: row.lessons.isCompleted,
-    isReviewed: row.lessons.isReviewed,
-    lastReviewedAt: row.lessons.lastReviewedAt,
+  // Decision engine — only feed upcoming, incomplete exams
+  const candidates: LessonCandidate[] = allLessonsRows.map((r) => ({
+    lessonId:          r.id,
+    lessonName:        r.name,
+    subjectId:         r.subjectId,
+    subjectName:       r.subjectName,
+    subjectColor:      r.subjectColor,
+    subjectDifficulty: r.subjectDifficulty,
+    masteryLevel:      r.masteryLevel,
+    isCompleted:       r.isCompleted,
+    isReviewed:        r.isReviewed,
+    lastReviewedAt:    r.lastReviewedAt,
   }));
 
-  const examInfos: ExamInfo[] = allExams.map((e) => ({
-    subjectId: e.subjectId,
-    examDate: e.examDate,
-  }));
+  const examInfos: ExamInfo[] = allExams
+    .filter((e) => !e.isCompleted && e.examDate >= today)
+    .map((e) => ({ subjectId: e.subjectId, examDate: e.examDate }));
 
   const suggestion = computeSuggestion(candidates, examInfos);
 
-  const welcomeMessage = user
-    ? `مرحباً بك، ${user.name}!`
-    : "مرحباً بك في AIX";
-
-  const annualGoal = user?.annualGoal ?? "لم يُحدد هدف بعد";
-  const targetGrade = user?.targetGrade ?? 90;
-
-  // Last earned badge (simplified: check completed lessons milestone)
-  let lastAchievement = undefined;
+  // Last earned badge (milestone-based, simplified for MVP)
+  let lastAchievement: Record<string, unknown> | undefined;
   if (completedLessons >= 50) {
     lastAchievement = {
-      id: "fifty_lessons",
-      name: "خمسون درساً",
-      description: "أكملت 50 درساً",
-      isEarned: true,
+      id: "fifty_lessons", name: "خمسون درساً",
+      description: "أكملت 50 درساً", isEarned: true,
       earnedAt: new Date().toISOString(),
     };
   } else if (completedLessons >= 10) {
     lastAchievement = {
-      id: "ten_lessons",
-      name: "عشرة دروس",
-      description: "أكملت 10 دروس",
-      isEarned: true,
+      id: "ten_lessons", name: "عشرة دروس",
+      description: "أكملت 10 دروس", isEarned: true,
       earnedAt: new Date().toISOString(),
     };
   } else if (completedLessons >= 1) {
     lastAchievement = {
-      id: "first_lesson",
-      name: "الدرس الأول",
-      description: "أكملت أول درس لك",
-      isEarned: true,
+      id: "first_lesson", name: "الدرس الأول",
+      description: "أكملت أول درس لك", isEarned: true,
       earnedAt: new Date().toISOString(),
     };
   }
 
   const response: Record<string, unknown> = {
-    welcomeMessage,
-    annualGoal,
-    targetGrade,
+    welcomeMessage:      user ? `مرحباً بك، ${user.name}!` : "مرحباً بك في AIX",
+    annualGoal:          user?.annualGoal ?? "لم يُحدد هدف بعد",
+    targetGrade:         user?.targetGrade ?? 90,
     overallProgress,
-    totalSubjects: subjects.length,
+    totalSubjects:       subjects.length,
     upcomingExams,
     lessonsNeedingReview,
   };
 
-  if (suggestion) response.suggestedLesson = suggestion;
-  if (lastAchievement) response.lastAchievement = lastAchievement;
+  if (suggestion)       response.suggestedLesson  = suggestion;
+  if (lastAchievement)  response.lastAchievement  = lastAchievement;
 
   res.json(response);
 });

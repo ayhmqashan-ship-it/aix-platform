@@ -4,7 +4,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
 import { useGetUserProfile } from '@workspace/api-client-react';
 import { Layout } from './components/layout';
-import { useEffect } from 'react';
+import { useEffect, type ComponentType } from 'react';
 import { Loader2 } from 'lucide-react';
 
 // Pages
@@ -28,13 +28,18 @@ const queryClient = new QueryClient({
   },
 });
 
-function ProtectedRoute({ component: Component, ...rest }: any) {
+interface ProtectedRouteProps {
+  component: ComponentType;
+}
+
+function ProtectedRoute({ component: Component }: ProtectedRouteProps) {
   const [location, setLocation] = useLocation();
   const { data: profile, isLoading, error } = useGetUserProfile();
 
   useEffect(() => {
     if (!isLoading) {
-      if (error && (error as any).status === 404 && location !== '/register') {
+      const isNotFound = (error as { status?: number } | null)?.status === 404;
+      if (isNotFound && location !== '/register') {
         setLocation('/register');
       } else if (profile && location === '/register') {
         setLocation('/');
@@ -53,8 +58,7 @@ function ProtectedRoute({ component: Component, ...rest }: any) {
     );
   }
 
-  // Allow rendering component while redirecting to avoid flash of empty
-  return <Component {...rest} />;
+  return <Component />;
 }
 
 function Router() {
@@ -69,7 +73,8 @@ function Router() {
         <Route path="/exams"><ProtectedRoute component={Exams} /></Route>
         <Route path="/achievements"><ProtectedRoute component={Achievements} /></Route>
         <Route path="/decision"><ProtectedRoute component={Decision} /></Route>
-        <Route path="/about"><ProtectedRoute component={About} /></Route>
+        {/* About is a public page — no auth required */}
+        <Route path="/about"><About /></Route>
         <Route component={NotFound} />
       </Switch>
     </Layout>

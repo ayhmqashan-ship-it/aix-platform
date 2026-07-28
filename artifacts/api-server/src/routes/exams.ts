@@ -10,35 +10,56 @@ import {
 
 const router: IRouter = Router();
 
-async function enrichExam(exam: typeof examsTable.$inferSelect) {
-  const [subject] = await db
-    .select()
-    .from(subjectsTable)
-    .where(eq(subjectsTable.id, exam.subjectId));
+/** Shared select shape — reused across GET list and single-record responses. */
+const examWithSubjectSelect = {
+  id:           examsTable.id,
+  subjectId:    examsTable.subjectId,
+  examDate:     examsTable.examDate,
+  examTime:     examsTable.examTime,
+  targetGrade:  examsTable.targetGrade,
+  notes:        examsTable.notes,
+  isCompleted:  examsTable.isCompleted,
+  createdAt:    examsTable.createdAt,
+  subjectName:  subjectsTable.name,
+  subjectColor: subjectsTable.color,
+} as const;
+
+function formatExam(row: {
+  id: number;
+  subjectId: number;
+  examDate: string;
+  examTime: string | null;
+  targetGrade: number | null;
+  notes: string | null;
+  isCompleted: boolean;
+  createdAt: Date;
+  subjectName: string | null;
+  subjectColor: string | null;
+}) {
   return {
-    id: exam.id,
-    subjectId: exam.subjectId,
-    subjectName: subject?.name ?? "غير محدد",
-    subjectColor: subject?.color ?? "#6366f1",
-    examDate: exam.examDate,
-    examTime: exam.examTime,
-    targetGrade: exam.targetGrade,
-    notes: exam.notes,
-    isCompleted: exam.isCompleted,
-    createdAt: exam.createdAt.toISOString(),
+    id:           row.id,
+    subjectId:    row.subjectId,
+    subjectName:  row.subjectName  ?? "غير محدد",
+    subjectColor: row.subjectColor ?? "#6366f1",
+    examDate:     row.examDate,
+    examTime:     row.examTime,
+    targetGrade:  row.targetGrade,
+    notes:        row.notes,
+    isCompleted:  row.isCompleted,
+    createdAt:    row.createdAt.toISOString(),
   };
 }
 
-// GET /exams
+// GET /exams — single JOIN query, no N+1
 router.get("/exams", async (req, res): Promise<void> => {
   const exams = await db
-    .select()
+    .select(examWithSubjectSelect)
     .from(examsTable)
+    .leftJoin(subjectsTable, eq(examsTable.subjectId, subjectsTable.id))
     .where(eq(examsTable.userId, 1))
     .orderBy(examsTable.examDate);
 
-  const enriched = await Promise.all(exams.map(enrichExam));
-  res.json(enriched);
+  res.json(exams.map(formatExam));
 });
 
 // POST /exams
@@ -49,20 +70,26 @@ router.post("/exams", async (req, res): Promise<void> => {
     return;
   }
 
-  const [exam] = await db
+  const [inserted] = await db
     .insert(examsTable)
     .values({
-      userId: 1,
-      subjectId: parsed.data.subjectId,
-      examDate: parsed.data.examDate,
-      examTime: parsed.data.examTime ?? null,
+      userId:      1,
+      subjectId:   parsed.data.subjectId,
+      examDate:    parsed.data.examDate,
+      examTime:    parsed.data.examTime    ?? null,
       targetGrade: parsed.data.targetGrade ?? null,
-      notes: parsed.data.notes ?? null,
+      notes:       parsed.data.notes       ?? null,
     })
     .returning();
 
-  const enriched = await enrichExam(exam);
-  res.status(201).json(enriched);
+  // Fetch with JOIN to get subject info in one query
+  const [row] = await db
+    .select(examWithSubjectSelect)
+    .from(examsTable)
+    .leftJoin(subjectsTable, eq(examsTable.subjectId, subjectsTable.id))
+    .where(eq(examsTable.id, inserted!.id));
+
+  res.status(201).json(formatExam(row!));
 });
 
 // PATCH /exams/:examId
@@ -80,26 +107,31 @@ router.patch("/exams/:examId", async (req, res): Promise<void> => {
   }
 
   const updateData: Record<string, unknown> = {};
-  if (parsed.data.subjectId !== undefined) updateData.subjectId = parsed.data.subjectId;
-  if (parsed.data.examDate !== undefined) updateData.examDate = parsed.data.examDate;
-  if ("examTime" in parsed.data) updateData.examTime = parsed.data.examTime ?? null;
+  if (parsed.data.subjectId  !== undefined) updateData.subjectId  = parsed.data.subjectId;
+  if (parsed.data.examDate   !== undefined) updateData.examDate   = parsed.data.examDate;
+  if ("examTime"    in parsed.data) updateData.examTime    = parsed.data.examTime    ?? null;
   if ("targetGrade" in parsed.data) updateData.targetGrade = parsed.data.targetGrade ?? null;
-  if ("notes" in parsed.data) updateData.notes = parsed.data.notes ?? null;
+  if ("notes"       in parsed.data) updateData.notes       = parsed.data.notes       ?? null;
   if (parsed.data.isCompleted !== undefined) updateData.isCompleted = parsed.data.isCompleted;
 
-  const [exam] = await db
+  const [updated] = await db
     .update(examsTable)
     .set(updateData)
     .where(and(eq(examsTable.id, params.data.examId), eq(examsTable.userId, 1)))
     .returning();
 
-  if (!exam) {
+  if (!updated) {
     res.status(404).json({ error: "الاختبار غير موجود" });
     return;
   }
 
-  const enriched = await enrichExam(exam);
-  res.json(enriched);
+  const [row] = await db
+    .select(examWithSubjectSelect)
+    .from(examsTable)
+    .leftJoin(subjectsTable, eq(examsTable.subjectId, subjectsTable.id))
+    .where(eq(examsTable.id, updated.id));
+
+  res.json(formatExam(row!));
 });
 
 // DELETE /exams/:examId
