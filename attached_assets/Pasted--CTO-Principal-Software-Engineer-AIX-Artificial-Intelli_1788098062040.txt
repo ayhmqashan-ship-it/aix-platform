@@ -1,0 +1,430 @@
+أنت الآن تعمل كـ CTO + Principal Software Engineer لمشروع AIX
+(Artificial Intelligence eXperience).
+
+نحن لا نريد إنشاء مشروع جديد.
+نريد نقل النسخة الحالية العاملة من Replit إلى GitHub تمهيدًا لتطويرها محليًا عبر VS Code.
+
+==================================================
+🎯 الهدف
+==================================================
+
+اجعل المشروع جاهزًا للنقل الآمن والكامل إلى GitHub وVS Code
+بدون فقدان أي كود أو إعداد أو ملف أو schema أو API أو functionality.
+
+اعتبر النسخة الحالية من AIX هي النسخة المرجعية.
+
+⚠️ لا تعيد بناء المشروع.
+⚠️ لا تغير architecture.
+⚠️ لا تحذف ملفات بحجة أنها غير مستخدمة.
+⚠️ لا تغيّر الـdatabase schema إلا إذا كان ضروريًا للنقل.
+⚠️ لا تضف Features جديدة.
+⚠️ لا تصلح مشاكل غير مرتبطة بالنقل إلا إذا كانت تمنع التشغيل.
+⚠️ لا تضع Secrets أو API keys أو passwords داخل GitHub.
+
+==================================================
+1. AUDIT كامل للمشروع
+==================================================
+
+قبل أي تعديل، افحص المشروع كاملًا.
+
+حدد:
+
+- Frontend
+- Backend
+- Database
+- Drizzle schema
+- migrations
+- OpenAPI
+- Zod schemas
+- API clients
+- routes
+- services
+- decision engine
+- components
+- pages
+- configuration
+- package manager
+- scripts
+- environment variables
+- workflows
+- tests
+- build configuration
+
+أنشئ inventory واضحًا لجميع الأجزاء المهمة.
+
+==================================================
+2. Git readiness
+==================================================
+
+جهز المشروع ليكون Git repository احترافيًا.
+
+تحقق من:
+
+.gitignore
+
+وتأكد أنه يمنع:
+
+.env
+.env.*
+node_modules/
+dist/
+build/
+logs/
+temporary files
+Replit-specific secrets
+local database files
+editor files
+OS files
+
+لكن لا تمنع ملفات configuration الضرورية للمشروع.
+
+أنشئ أو حدّث:
+
+.env.example
+
+بحيث يحتوي فقط على أسماء المتغيرات المطلوبة
+بدون أي قيم سرية.
+
+==================================================
+3. Replit → Local Development
+==================================================
+
+حدد جميع الأشياء التي تعتمد على Replit فقط.
+
+مثل:
+
+- Replit environment variables
+- Replit workflows
+- Replit-specific paths
+- Replit-specific configuration
+- Replit deployment assumptions
+- ports
+- scripts
+- database connection assumptions
+
+ثم اجعل المشروع قابلًا للتشغيل خارج Replit.
+
+الهدف:
+
+VS Code
+↓
+Node.js
+↓
+AIX
+↓
+PostgreSQL
+
+==================================================
+4. PostgreSQL
+==================================================
+
+افحص اتصال قاعدة البيانات.
+
+حدد:
+
+- DATABASE_URL
+- migrations
+- Drizzle config
+- schema
+- seed scripts
+
+لا تنقل بيانات production الحساسة إلى GitHub.
+
+إذا كان هناك seed/demo data، اجعله منفصلًا وآمنًا.
+
+اكتب تعليمات واضحة لتشغيل PostgreSQL محليًا.
+
+==================================================
+5. package management
+==================================================
+
+حدد هل المشروع يستخدم:
+
+npm
+pnpm
+yarn
+
+ولا تغير package manager بدون سبب.
+
+تأكد من:
+
+package.json
+lockfile
+scripts
+
+ويجب أن يستطيع المطور تشغيل:
+
+install
+dev
+build
+test
+typecheck
+
+بأوامر واضحة.
+
+==================================================
+6. GitHub architecture
+==================================================
+
+جهز المشروع لاستخدام:
+
+main
+develop
+feature/*
+
+اجعل:
+
+main
+= stable production-ready branch
+
+develop
+= التطوير الرئيسي
+
+feature/*
+= الميزات الجديدة
+
+لا تدمج أي feature مباشرة في main أثناء التطوير.
+
+==================================================
+7. Documentation
+==================================================
+
+أنشئ README.md احترافيًا للمشروع.
+
+يجب أن يحتوي على:
+
+AIX
+Artificial Intelligence eXperience
+
+Vision
+
+Architecture
+
+Tech Stack
+
+Project Structure
+
+Installation
+
+Environment Variables
+
+Database Setup
+
+Development
+
+Testing
+
+Build
+
+Deployment
+
+Security
+
+Contribution Guidelines
+
+Roadmap
+
+==================================================
+8. ARCHITECTURE DOCUMENT
+==================================================
+
+أنشئ:
+
+docs/ARCHITECTURE.md
+
+اشرح فيه:
+
+Frontend
+Backend
+Database
+OpenAPI
+Zod
+Drizzle
+Decision Engine
+Modules
+Data Flow
+
+ويجب أن يكون الرسم المنطقي:
+
+User
+↓
+React
+↓
+API Client
+↓
+Express
+↓
+Domain Services
+↓
+Decision/Business Logic
+↓
+Drizzle
+↓
+PostgreSQL
+
+==================================================
+9. DEVELOPMENT GUIDE
+==================================================
+
+أنشئ:
+
+docs/DEVELOPMENT.md
+
+اشرح بالتحديد:
+
+كيف أشغل المشروع على VS Code؟
+
+كيف أنشئ .env؟
+
+كيف أشغل PostgreSQL؟
+
+كيف أشغل migrations؟
+
+كيف أشغل frontend؟
+
+كيف أشغل backend؟
+
+كيف أشغل tests؟
+
+كيف أبني المشروع؟
+
+==================================================
+10. SECURITY AUDIT
+==================================================
+
+قبل تجهيز النقل:
+
+افحص المشروع بحثًا عن:
+
+- API keys
+- passwords
+- tokens
+- secrets
+- credentials
+- hardcoded DATABASE_URL
+- private URLs
+- sensitive configuration
+
+إذا وجدت Secret:
+
+لا تعرضه في التقرير.
+لا تطبعه.
+أشر فقط إلى مكانه بشكل آمن واطلب استبداله بمتغير بيئي.
+
+==================================================
+11. Dependency Audit
+==================================================
+
+افحص dependencies الحالية.
+
+لا تقم بترقيات عشوائية.
+
+تحقق من vulnerabilities الموجودة حاليًا.
+
+إذا كان هناك vulnerability تمنع النقل أو تمثل خطرًا واضحًا،
+وثّقها واقترح الإصلاح المناسب.
+
+==================================================
+12. Preserve AIX
+==================================================
+
+يجب الحفاظ على كل ما يعمل حاليًا:
+
+- Arabic UI
+- RTL
+- IBM Plex Sans Arabic
+- Dashboard
+- Subjects
+- Lessons
+- Exams
+- Schedule
+- Achievements
+- Decision Engine
+- Smart Decision
+- About page
+- PostgreSQL
+- Drizzle
+- Express
+- OpenAPI
+- Zod
+- Modular Architecture
+
+لا تحذف أي شيء.
+
+==================================================
+13. TEST BEFORE HANDOFF
+==================================================
+
+قبل أن تقول إن المشروع جاهز:
+
+شغّل:
+
+TypeScript check
+Frontend build
+Backend build
+Tests الموجودة
+API checks
+
+وتأكد أن المشروع يعمل.
+
+اختبر على الأقل:
+
+Register
+Login إن وجد
+Dashboard
+Create subject
+Create lesson
+Complete lesson
+Exams
+Schedule
+Smart Decision
+Achievements
+
+==================================================
+14. HANDOFF REPORT
+==================================================
+
+في النهاية أعطني تقريرًا يحتوي على:
+
+1. حالة المشروع قبل النقل.
+2. الملفات التي تم تعديلها.
+3. الملفات التي تم إنشاؤها.
+4. الأشياء المرتبطة بـReplit التي تم فصلها.
+5. Environment variables المطلوبة.
+6. طريقة تشغيل المشروع محليًا.
+7. طريقة تشغيل PostgreSQL.
+8. نتائج TypeScript.
+9. نتائج Build.
+10. نتائج Tests.
+11. أي مشكلة متبقية.
+12. هل المشروع جاهز فعليًا للعمل من VS Code؟
+
+==================================================
+🚨 قاعدة أخيرة
+==================================================
+
+لا تعتبر المهمة مكتملة لمجرد أن الملفات موجودة.
+
+المهمة مكتملة فقط عندما يكون:
+
+AIX
+↓
+GitHub-ready
+↓
+VS Code-ready
+↓
+PostgreSQL-ready
+↓
+Build passes
+↓
+TypeScript passes
+↓
+Tests pass
+
+ولا تقم بأي تطوير للـAIX نفسه في هذه المهمة.
+
+هذه المهمة اسمها:
+
+AIX MIGRATION FOUNDATION v1.0
+
+ابدأ الآن بـ AUDIT فقط، ثم نفذ الإصلاحات الضرورية للنقل، ثم تحقق من المشروع كاملًا.

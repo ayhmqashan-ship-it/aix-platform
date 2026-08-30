@@ -1,1 +1,2 @@
 - [Replit preview CORS](replit-preview-cors.md) — preview origins can contain multiple nested subdomains.
+- [Drizzle migration output](drizzle-migrations.md) — keep drizzle-kit migration output relative to the package config for check/migrate compatibility.
