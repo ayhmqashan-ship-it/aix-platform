@@ -33,8 +33,9 @@ app.use(
 // Allow localhost (dev), *.replit.dev (Replit preview), *.replit.app (deployed)
 const allowedOriginPatterns = [
   /^https?:\/\/localhost(:\d+)?$/,
-  /^https:\/\/[a-z0-9-]+\.replit\.dev$/,
-  /^https:\/\/[a-z0-9-]+\.replit\.app$/,
+  // Replit previews can use nested subdomains, e.g. <id>.spock.replit.dev.
+  /^https:\/\/(?:[a-z0-9-]+\.)+replit\.dev$/,
+  /^https:\/\/(?:[a-z0-9-]+\.)+replit\.app$/,
 ];
 
 app.use(

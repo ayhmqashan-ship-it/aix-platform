@@ -1,0 +1,1 @@
+- [Replit preview CORS](replit-preview-cors.md) — preview origins can contain multiple nested subdomains.
